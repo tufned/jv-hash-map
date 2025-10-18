@@ -3,6 +3,7 @@ package core.basesyntax;
 public class MyHashMap<K, V> implements MyMap<K, V> {
     private static final int DEFAULT_CAPACITY = 16;
     private static final float LOAD_FACTOR = 0.75f;
+    private static final int RESIZE_MULTIPLIER = 2;
     private int capacity;
     private float threshold;
     private int size;
@@ -27,17 +28,21 @@ public class MyHashMap<K, V> implements MyMap<K, V> {
 
     @Override
     public V getValue(K key) {
-        for (Node<K, V> node : table) {
-            if (node != null) {
-                if (node.key == key || (node.key != null && node.key.equals(key))) {
-                    return node.value;
-                }
-                Node<K, V> foundNode = getNodeFromCollision(node, key);
-                if (foundNode != null) {
-                    return foundNode.value;
-                }
-            }
+        int index = calculateIndex(key, key == null ? 0 : key.hashCode());
+        Node<K, V> node = table[index];
+        if (node == null) {
+            return null;
         }
+
+        if (node.key == key || (node.key != null && node.key.equals(key))) {
+            return node.value;
+        }
+
+        Node<K, V> foundNode = getNodeFromCollision(node, key);
+        if (foundNode != null) {
+            return foundNode.value;
+        }
+
         return null;
     }
 
@@ -47,7 +52,7 @@ public class MyHashMap<K, V> implements MyMap<K, V> {
     }
 
     private boolean addToBucket(Node<K, V> node, Node<K, V>[] table) {
-        int index = node.key == null ? 0 : Math.abs(node.hash % capacity);
+        int index = calculateIndex(node.key, node.hash);
         if (table[index] == null) {
             table[index] = node;
             return true;
@@ -60,6 +65,10 @@ public class MyHashMap<K, V> implements MyMap<K, V> {
         }
 
         return addToBucketWithCollision(table[index], node);
+    }
+
+    private int calculateIndex(K key, int hash) {
+        return key == null ? 0 : Math.abs(hash % capacity);
     }
 
     private boolean addToBucketWithCollision(Node<K, V> backetNode, Node<K, V> node) {
@@ -82,7 +91,7 @@ public class MyHashMap<K, V> implements MyMap<K, V> {
     }
 
     private void resize() {
-        capacity = capacity * 2;
+        capacity = capacity * RESIZE_MULTIPLIER;
         threshold = calculateThreshold();
         Node<K, V>[] newTable = (Node<K, V>[]) new Node[capacity];
         for (Node<K, V> node : table) {
@@ -117,10 +126,10 @@ public class MyHashMap<K, V> implements MyMap<K, V> {
     }
 
     private static class Node<K, V> {
-        final K key;
-        V value;
-        final int hash;
-        Node<K, V> next;
+        public final K key;
+        public V value;
+        public final int hash;
+        public Node<K, V> next;
 
         public Node(K key, V value, int hash) {
             this.key = key;
