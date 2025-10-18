@@ -68,20 +68,20 @@ public class MyHashMap<K, V> implements MyMap<K, V> {
     }
 
     private int calculateIndex(K key, int hash) {
-        return key == null ? 0 : Math.abs(hash % capacity);
+        return key == null ? 0 : (hash & 0x7fffffff) % capacity;
     }
 
-    private boolean addToBucketWithCollision(Node<K, V> backetNode, Node<K, V> node) {
-        if (backetNode.next == null) {
-            backetNode.next = node;
+    private boolean addToBucketWithCollision(Node<K, V> bucketNode, Node<K, V> node) {
+        if (bucketNode.next == null) {
+            bucketNode.next = node;
             return true;
         }
-        if (backetNode.next.key == node.key
-                || (backetNode.next.key != null && backetNode.next.key.equals(node.key))) {
-            backetNode.next.value = node.value;
+        if (bucketNode.next.key == node.key
+                || (bucketNode.next.key != null && bucketNode.next.key.equals(node.key))) {
+            bucketNode.next.value = node.value;
             return false;
         }
-        return addToBucketWithCollision(backetNode.next, node);
+        return addToBucketWithCollision(bucketNode.next, node);
     }
 
     private void ensureCapacity() {
@@ -126,10 +126,10 @@ public class MyHashMap<K, V> implements MyMap<K, V> {
     }
 
     private static class Node<K, V> {
-        public final K key;
-        public V value;
-        public final int hash;
-        public Node<K, V> next;
+        private final K key;
+        private V value;
+        private final int hash;
+        private Node<K, V> next;
 
         public Node(K key, V value, int hash) {
             this.key = key;
