@@ -53,12 +53,13 @@ public class MyHashMap<K, V> implements MyMap<K, V> {
             return true;
         }
 
-        if (table[index].key == node.key || (table[index].key != null && table[index].key.equals(node.key))) {
+        if (table[index].key == node.key
+                || (table[index].key != null && table[index].key.equals(node.key))) {
             table[index].value = node.value;
             return false;
         }
 
-       return addToBucketWithCollision(table[index], node);
+        return addToBucketWithCollision(table[index], node);
     }
 
     private boolean addToBucketWithCollision(Node<K, V> backetNode, Node<K, V> node) {
@@ -66,7 +67,8 @@ public class MyHashMap<K, V> implements MyMap<K, V> {
             backetNode.next = node;
             return true;
         }
-        if (backetNode.next.key == node.key || (backetNode.next.key != null && backetNode.next.key.equals(node.key))) {
+        if (backetNode.next.key == node.key
+                || (backetNode.next.key != null && backetNode.next.key.equals(node.key))) {
             backetNode.next.value = node.value;
             return false;
         }
